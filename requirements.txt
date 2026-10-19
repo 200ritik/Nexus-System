@@ -1,0 +1,9 @@
+docling
+logfire
+FlagEmbedding
+HybridChunker
+pinecone
+langchain
+langgraph
+langsmith
+langchain-community

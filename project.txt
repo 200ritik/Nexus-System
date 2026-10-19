@@ -1,0 +1,99 @@
+                         USER 0100292
+                              │
+                              │ uploads
+                              ▼
+                     ┌─────────────────┐
+                     │  blood_report   │
+                     │      .pdf       │
+                     └────────┬────────┘
+                              │
+                              ▼
+                       document_id
+                           DOC-A
+                              │
+             ┌────────────────┴────────────────┐
+             │                                 │
+             ▼                                 ▼
+      ┌─────────────────┐              ┌──────────────────┐
+      │   PostgreSQL    │              │   Vector DB      │
+      └─────────────────┘              └──────────────────┘
+             │                                 │
+             │                                 │
+      ┌──────┴─────────┐                ┌──────┴─────────┐
+      │                │                │                │
+      ▼                ▼                ▼                ▼
+   USER DATA       DOCUMENT DATA     CHUNKS          EMBEDDINGS
+      │                │                │                │
+      │                │                │                │
+  user_id          document_id       chunk_id       vector
+  0100292          DOC-A             CHUNK-001      [0.12,...]
+                   filename          chunk_text      [0.45,...]
+                   blood_report.pdf
+                   extension .pdf
+                   file_size
+                   upload_date
+                   status
+
+
+┌─────────────────────────────────────────────┐
+│                  PostgreSQL                 │
+├─────────────────────────────────────────────┤
+│                                             │
+│ USERS                                       │
+│ ├── user_id = 0100292                      │
+│ ├── account information                    │
+│ └── created_at                              │
+│                                             │
+│ DOCUMENTS                                   │
+│ ├── document_id = DOC-A                    │
+│ ├── user_id = 0100292                      │
+│ ├── filename = blood_report.pdf             │
+│ ├── extension = .pdf                       │
+│ ├── file_size                              │
+│ ├── uploaded_at                            │
+│ └── status = completed                     │
+│                                             │
+│ PARSED DATA                                 │
+│ └── DOC-A → extracted/parsed document data │
+│                                             │
+└─────────────────────────────────────────────┘
+
+
+
+┌─────────────────────────────────────────────┐
+│                  Vector DB                  │
+├─────────────────────────────────────────────┤
+│                                             │
+│ CHUNK-001                                   │
+│ ├── document_id = DOC-A                    │
+│ ├── user_id = 0100292                      │
+│ ├── chunk_text = "Hemoglobin 12.5..."      │
+│ └── embedding = [0.12, -0.34, 0.56, ...]  │
+│                                             │
+│ CHUNK-002                                   │
+│ ├── document_id = DOC-A                    │
+│ ├── user_id = 0100292                      │
+│ ├── chunk_text = "Glucose 110..."          │
+│ └── embedding = [0.21, -0.18, 0.72, ...]  │
+│                                             │
+└─────────────────────────────────────────────┘
+
+
+
+
+
+
+uploading part with validation====================================================
+Uploaded files
+      ↓
+upload_manager.py
+      ↓
+file_validation.py
+      ↓
+Validation passed?
+   ↓           ↓
+ YES           NO
+  ↓             ↓
+storage.py     STOP
+  ↓
+S3

@@ -1,49 +1,43 @@
-import logging
 
-from docling.document_converter import (
-    DocumentConverter,
-    PdfFormatOption,
-)
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import (
-    PdfPipelineOptions,
-)
+import logging
+from pathlib import Path
+
+from docling.document_converter import DocumentConverter
 
 logger = logging.getLogger(__name__)
 
 
-def create_converter() -> DocumentConverter:
-    """Create a Docling converter with OCR enabled."""
+def file_parsing(file_path: str):
+    """
+    Parse a PDF using Docling and return the DoclingDocument object.
+    """
 
-    pipeline_options = PdfPipelineOptions()
-    pipeline_options.do_ocr = True
-    pipeline_options.generate_picture_images = True
+    if not file_path:
+        raise ValueError("File path is required")
 
-    return DocumentConverter(
-        format_options={
-            InputFormat.PDF: PdfFormatOption(
-                pipeline_options=pipeline_options
-            )
-        }
-    )
-
-
-def file_parsing(document):
-    """Parse a document and return Markdown content."""
-
-    if document is None:
-        raise ValueError("Document cannot be empty")
+    if not Path(file_path).is_file():
+        raise FileNotFoundError(f"PDF file not found: {file_path}")
 
     logger.info("Parsing document")
 
-    converter = create_converter()
-    result = converter.convert(document)
+    converter = DocumentConverter()
+    result = converter.convert(file_path)
 
+    # Keep the DoclingDocument object for downstream chunking.
     parsed_file = result.document
 
-    if not parsed_file.strip():
-        raise ValueError("No content extracted from document")
+    if parsed_file is None:
+        raise ValueError("Docling failed to parse the document")
 
-    logger.info("Document parsing completed")
+    # Validate extracted text without replacing the document object.
+    extracted_text = parsed_file.export_to_markdown()
+
+    if not extracted_text.strip():
+        raise ValueError("No text could be extracted from the PDF")
+
+    logger.info(
+        "Document parsed successfully | characters=%d",
+        len(extracted_text),
+    )
 
     return parsed_file
